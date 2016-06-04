@@ -4,13 +4,38 @@
 #define EDIT_BUTTON	102
 #define DEL_BUTTON	103
 #define SRC_BUTTON	104
-#define IDC_MAIN_LIST  105			// Edit box identifier
+#define IDC_MAIN_LIST  105 // Edit box identifier
+#define ADD_WND  106 
 HWND hEdit;
-
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK windowprocessforwindow2(HWND handleforwindow1, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK windowprocessforwindow3(HWND handleforwindow1, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK windowprocessforwindow4(HWND handleforwindow1, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK windowprocessforwindow5(HWND handleforwindow1, UINT message, WPARAM wParam, LPARAM lParam);
+
+bool window1open, window2open, window3open, window4open, window5open = false;
+bool windowclass1registeredbefore, windowclass2registeredbefore,
+windowclass3registeredbefore, windowclass4registeredbefore, windowclass5registeredbefore = false;
+
+enum windowtoopenenumt { none, window2, window3, window4, window5 };
+
+windowtoopenenumt windowtoopenenum = none;
+
+void createwindow2(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd);
+void createwindow3(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd);
+void createwindow4(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd);
+void createwindow5(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd);
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)
 {
+	bool endprogram = false;
+	WNDCLASSEX windowclassforwindow2;
+	WNDCLASSEX windowclassforwindow3;
+	WNDCLASSEX windowclassforwindow4;
+	HWND handleforwindow2;
+	HWND handleforwindow3;
+	HWND handleforwindow4;
+
 	WNDCLASSEX wClass;
 	ZeroMemory(&wClass, sizeof(WNDCLASSEX));
 	wClass.cbClsExtra = NULL;
@@ -38,8 +63,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 	HWND hWnd = CreateWindowEx(NULL,
 		"Window Class",
 		"Librarie",
-		WS_OVERLAPPEDWINDOW,
-		500,
+		WS_OVERLAPPEDWINDOW | WS_BORDER,
+		200,
 		0,
 		430,
 		730,
@@ -59,30 +84,275 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nS
 	}
 
 	ShowWindow(hWnd, nShowCmd);
-
 	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
+	bool endloop = false;
+	while (endloop == false) {
+		if (GetMessage(&msg, NULL, 0, 0))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (windowtoopenenum != none) {
+			switch (windowtoopenenum) {
+			case window2:
+				if (window2open == false) {
+					createwindow2(windowclassforwindow2, handleforwindow2, hInst, nShowCmd);
+				}
+				break;
+			case window3:
+				if (window3open == false) {
+					createwindow3(windowclassforwindow3, handleforwindow3, hInst, nShowCmd);
+				}
+				break;
+			case window4:
+				if (window4open == false) {
+					createwindow4(windowclassforwindow4, handleforwindow4, hInst, nShowCmd);
+				}
+				break;
+			case window5:
+				if (window5open == false) {
+					createwindow5(windowclassforwindow4, handleforwindow4, hInst, nShowCmd);
+				}
+				break;
+			}
+			windowtoopenenum = none;
+		}
+		if (window1open == false && window2open == false && window3open == false && window4open == false && window5open == false)
+			endloop = true;
 	}
 
-	return 0;
+MessageBox(NULL,
+	"All windows are closed.  Program will now close.",
+	"Exit",
+	MB_ICONINFORMATION);
+
+}
+void createwindow2(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd) {
+	if (windowclass2registeredbefore == false) {
+		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+		wc.cbClsExtra = NULL;
+		wc.cbSize = sizeof(WNDCLASSEX);
+		wc.cbWndExtra = NULL;
+		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hIcon = NULL;
+		wc.hIconSm = NULL;
+		wc.hInstance = hInst;
+		wc.lpfnWndProc = (WNDPROC)windowprocessforwindow2;
+		wc.lpszClassName = "wc2";
+		wc.lpszMenuName = NULL;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+
+		if (!RegisterClassEx(&wc))
+		{
+			int nResult = GetLastError();
+			MessageBox(NULL,
+				"Window class creation failed",
+				"Window Class Failed",
+				MB_ICONERROR);
+		}
+		else
+			windowclass2registeredbefore = true;
+	}
+	hwnd = CreateWindowEx(NULL,
+		wc.lpszClassName,
+		"Adaugare Client",
+		WS_OVERLAPPEDWINDOW,
+		630,
+		100,
+		520,
+		250,
+		NULL,
+		NULL,
+		hInst,
+		NULL                /* No Window Creation data */
+	);
+
+	if (!hwnd)
+	{
+		int nResult = GetLastError();
+
+		MessageBox(NULL,
+			"Window creation failed",
+			"Window Creation Failed",
+			MB_ICONERROR);
+	}
+
+	ShowWindow(hwnd, nShowCmd);
+}
+void createwindow3(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd) {
+	if (windowclass3registeredbefore == false) {
+		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+		wc.cbClsExtra = NULL;
+		wc.cbSize = sizeof(WNDCLASSEX);
+		wc.cbWndExtra = NULL;
+		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hIcon = NULL;
+		wc.hIconSm = NULL;
+		wc.hInstance = hInst;
+		wc.lpfnWndProc = (WNDPROC)windowprocessforwindow3;
+		wc.lpszClassName = "window class 3";
+		wc.lpszMenuName = NULL;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+
+		if (!RegisterClassEx(&wc))
+		{
+			int nResult = GetLastError();
+			MessageBox(NULL,
+				"Window class creation failed",
+				"Window Class Failed",
+				MB_ICONERROR);
+		}
+		else
+			windowclass3registeredbefore = true;
+	}
+	hwnd = CreateWindowEx(NULL,
+		wc.lpszClassName,
+		"Editare Client",
+		WS_OVERLAPPEDWINDOW,
+		630,
+		100,
+		520,
+		250,
+		NULL,
+		NULL,
+		hInst,
+		NULL               
+	);
+
+	if (!hwnd)
+	{
+		int nResult = GetLastError();
+
+		MessageBox(NULL,
+			"Window creation failed",
+			"Window Creation Failed",
+			MB_ICONERROR);
+	}
+
+	ShowWindow(hwnd, nShowCmd);
 }
 
+void createwindow4(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd) {
+	if (windowclass4registeredbefore == false) {
+		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+		wc.cbClsExtra = NULL;
+		wc.cbSize = sizeof(WNDCLASSEX);
+		wc.cbWndExtra = NULL;
+		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hIcon = NULL;
+		wc.hIconSm = NULL;
+		wc.hInstance = hInst;
+		wc.lpfnWndProc = (WNDPROC)windowprocessforwindow4;
+		wc.lpszClassName = "window class 4";
+		wc.lpszMenuName = NULL;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+
+		if (!RegisterClassEx(&wc))
+		{
+			int nResult = GetLastError();
+			MessageBox(NULL,
+				"Window class creation failed",
+				"Window Class Failed",
+				MB_ICONERROR);
+		}
+		else
+			windowclass4registeredbefore = true;
+	}
+	hwnd = CreateWindowEx(NULL,
+		wc.lpszClassName,
+		"Stergere Client",
+		WS_OVERLAPPEDWINDOW,
+		630,
+		100,
+		520,
+		250,
+		NULL,
+		NULL,
+		hInst,
+		NULL                /* No Window Creation data */
+	);
+
+	if (!hwnd)
+	{
+		int nResult = GetLastError();
+
+		MessageBox(NULL,
+			"Window creation failed",
+			"Window Creation Failed",
+			MB_ICONERROR);
+	}
+
+	ShowWindow(hwnd, nShowCmd);
+}
+void createwindow5(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd) {
+	if (windowclass4registeredbefore == false) {
+		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+		wc.cbClsExtra = NULL;
+		wc.cbSize = sizeof(WNDCLASSEX);
+		wc.cbWndExtra = NULL;
+		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wc.hIcon = NULL;
+		wc.hIconSm = NULL;
+		wc.hInstance = hInst;
+		wc.lpfnWndProc = (WNDPROC)windowprocessforwindow4;
+		wc.lpszClassName = "window class 4";
+		wc.lpszMenuName = NULL;
+		wc.style = CS_HREDRAW | CS_VREDRAW;
+
+		if (!RegisterClassEx(&wc))
+		{
+			int nResult = GetLastError();
+			MessageBox(NULL,
+				"Window class creation failed",
+				"Window Class Failed",
+				MB_ICONERROR);
+		}
+		else
+			windowclass4registeredbefore = true;
+	}
+	hwnd = CreateWindowEx(NULL,
+		wc.lpszClassName,
+		"Cautare",
+		WS_OVERLAPPEDWINDOW,
+		630,
+		100,
+		520,
+		250,
+		NULL,
+		NULL,
+		hInst,
+		NULL                /* No Window Creation data */
+	);
+
+	if (!hwnd)
+	{
+		int nResult = GetLastError();
+
+		MessageBox(NULL,
+			"Window creation failed",
+			"Window Creation Failed",
+			MB_ICONERROR);
+	}
+
+	ShowWindow(hwnd, nShowCmd);
+}
 LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
 	case WM_CREATE:
 	{
-		// Create an edit box
+		window1open = true;
+		// Create an list box
 		hEdit = CreateWindowEx(WS_EX_CLIENTEDGE,
 			"LISTBOX",
 			"",
-			WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+			WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_EDITLABELS,
 			3,
 			32,
 			410,
@@ -104,7 +374,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// Create a push button
 		HWND add_client = CreateWindowEx(NULL,
 			"BUTTON",
-			"Introdu un client",
+			"Adauga un client",
 			WS_TABSTOP | WS_VISIBLE |
 			WS_CHILD | BS_DEFPUSHBUTTON,
 			3,
@@ -175,32 +445,24 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		case ADD_BUTTON:
+		case ADD_BUTTON: //sa fac un nou window
 		{
-			char buffer[256];
-			SendMessage(hEdit,
-				WM_GETTEXT,
-				sizeof(buffer) / sizeof(buffer[0]),
-				reinterpret_cast<LPARAM>(buffer));
-			MessageBox(NULL,
-				buffer,
-				"Information",
-				MB_ICONINFORMATION);
-		}
-		break;
-		case DEL_BUTTON:
-		{
-
+			windowtoopenenum = window2;
 		}
 		break;
 		case EDIT_BUTTON:
 		{
-
+			windowtoopenenum = window3;
+		}
+		break;
+		case DEL_BUTTON:
+		{
+			windowtoopenenum = window4;
 		}
 		break;
 		case SRC_BUTTON:
 		{
-
+			windowtoopenenum = window5;
 		}
 		break;
 		}
@@ -208,11 +470,90 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 	{
-		PostQuitMessage(0);
+		window1open = false;
 		return 0;
 	}
 	break;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+LRESULT CALLBACK windowprocessforwindow2(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+	case WM_CREATE:
+		window2open = true;
+		CreateWindowEx(NULL,
+			"BUTTON",
+			"Open Window 3",
+			WS_TABSTOP | WS_VISIBLE |
+			WS_CHILD | BS_DEFPUSHBUTTON,
+			50,
+			220,
+			150,
+			24,
+			hwnd,
+			(HMENU)EDIT_BUTTON,
+			GetModuleHandle(NULL),
+			NULL);
+		break;
+	case WM_DESTROY:
+		window2open = false;
+		break;
+	case WM_COMMAND:
+		switch LOWORD(wParam) {
+		case EDIT_BUTTON:
+			windowtoopenenum = window3;
+			break;
+		}
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+	case WM_CREATE:
+		window3open = true;
+		CreateWindowEx(NULL,
+			"BUTTON",
+			"Open Window 4",
+			WS_TABSTOP | WS_VISIBLE |
+			WS_CHILD | BS_DEFPUSHBUTTON,
+			50,
+			220,
+			150,
+			24,
+			hwnd,
+			(HMENU)EDIT_BUTTON,
+			GetModuleHandle(NULL),
+			NULL);
+		break;
+	case WM_DESTROY:
+		window3open = false;
+		break;
+	case WM_COMMAND:
+		switch LOWORD(wParam) {
+		case EDIT_BUTTON:
+			windowtoopenenum = window4;
+			break;
+		}
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+LRESULT CALLBACK windowprocessforwindow4(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+	case WM_DESTROY:
+		window4open = false;
+		break;
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+LRESULT CALLBACK windowprocessforwindow5(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+	case WM_DESTROY:
+		window5open = false;
+		break;
+	}
+	return DefWindowProc(hwnd, message, wParam, lParam);
 }
