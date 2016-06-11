@@ -38,7 +38,8 @@ struct Client
 	Client *prec;
 };
 Client *ultim = NULL, *prim = NULL;
-Client *clienti;
+Client *clienti,*src;
+int count;
 char numeB[50], prenumeB[50], carteB[50],datainB[15],dataoutB[15];
 static HWND hwnd, hStatic, hList, hAddN, hAddP, hAddC, hAddDin, hAddDout, hEdDin, hEdDout, hDelN, hDelP, hSrcC, hSrcN, hSrcP;
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -88,21 +89,28 @@ void add_pers(char *a, char *b, char *c, char *d, char *e)
 	clienti->next = NULL;
 	ultim = clienti;
 }
-void add_book(char *a, char *b)
+void add_book(char *a, char *b, char *c, char *d, char *e)
 {
+	char buffer[50];
 	Client *n;
 	n = prim;
+	strcpy(buffer, a);
+	strcat(buffer, " ");
+	strcat(buffer, b);
 	while (n != NULL)
 	{
-		if (strcmp(a, n->nume) == 0)
+		if (strcmp(buffer, n->nume) == 0)
 		{
-			strcpy(n->book, b);
+			strcpy(n->book, c);
+			strcpy(n->datain, d);
+			strcpy(n->dataout, e);
 			return;
 		}
 		n = n->next;
 	}
+	del = true;
 }
-void del_pers(char *a,char *b)
+void del_pers(char *a, char *b)
 {
 	Client *aux;
 	Client *n;
@@ -137,6 +145,26 @@ void del_pers(char *a,char *b)
 				aux->next = n;
 			return;
 		}
+		n = n->next;
+	}
+	del = true;
+}
+void src_pers(char *a, char *b)
+{
+	char buffer[50];
+	Client *n;
+	n = prim;
+	strcpy(buffer, a);
+	strcat(buffer, " ");
+	strcat(buffer, b);
+	while (n != NULL)
+	{
+		if (strcmp(buffer, n->nume) == 0)
+		{
+			src = n;
+			return;
+		}
+		count++;
 		n = n->next;
 	}
 	del = true;
@@ -437,7 +465,7 @@ void createwindow5(WNDCLASSEX& wc, HWND& hwnd, HINSTANCE hInst, int nShowCmd) {
 		WS_OVERLAPPEDWINDOW,
 		830,
 		250,
-		490,
+		250,
 		130,
 		NULL,
 		NULL,
@@ -688,7 +716,7 @@ LRESULT CALLBACK windowprocessforwindow2(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hAddDin,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Imprumut");
+			(LPARAM)"Data Imprumut: dd.mm.yyyy");
 		datain2 = false;
 	}
 	if (GetFocus() == hAddDout && dataout2 == false)
@@ -704,7 +732,7 @@ LRESULT CALLBACK windowprocessforwindow2(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hAddDout,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Aducere");
+			(LPARAM)"Data Aducere: dd.mm.yyyy");
 		dataout2 = false;
 	}
 	switch (message) {
@@ -798,7 +826,7 @@ LRESULT CALLBACK windowprocessforwindow2(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hAddDin,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Imprumut");
+			(LPARAM)"Data Imprumut: dd.mm.yyyy");
 		hAddDout = CreateWindowEx(WS_EX_CLIENTEDGE,
 			"EDIT",
 			"",
@@ -820,7 +848,7 @@ LRESULT CALLBACK windowprocessforwindow2(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hAddDout,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Aducere");
+			(LPARAM)"Data Aducere: dd.mm.yyyy");
 		// Create a push button
 		HWND hWndButton = CreateWindowEx(NULL,
 			"BUTTON",
@@ -943,7 +971,7 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hEdDin,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Imprumut");
+			(LPARAM)"Data Imprumut: dd.mm.yyyy");
 		datain3 = false;
 	}
 	if (GetFocus() == hEdDout && dataout3 == false)
@@ -959,7 +987,7 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hEdDout,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Aducere");
+			(LPARAM)"Data Aducere: dd.mm.yyyy");
 		dataout3 = false;
 	}
 	switch (message) {
@@ -1053,7 +1081,7 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hEdDin,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Imprumut");
+			(LPARAM)"Data Imprumut: dd.mm.yyyy");
 		hEdDout = CreateWindowEx(WS_EX_CLIENTEDGE,
 			"EDIT",
 			"",
@@ -1075,7 +1103,7 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 		SendMessage(hEdDout,
 			WM_SETTEXT,
 			NULL,
-			(LPARAM)"Data Aducere");
+			(LPARAM)"Data Aducere: dd.mm.yyyy");
 		// Create a push button
 		HWND hWndButton = CreateWindowEx(NULL,
 			"BUTTON",
@@ -1110,6 +1138,27 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 	case WM_COMMAND:
 		switch LOWORD(wParam) 
 		{
+		case ADD_BUTTON2:
+		{
+			int gwstat = 0;
+			gwstat = GetWindowText(hAddN, &numeB[0], 50);
+			gwstat = GetWindowText(hAddP, &prenumeB[0], 50);
+			gwstat = GetWindowText(hAddC, &carteB[0], 50);
+			gwstat = GetWindowText(hEdDin, &datainB[0], 15);
+			gwstat = GetWindowText(hEdDout, &dataoutB[0], 15);
+			add_book(&numeB[0], &prenumeB[0], &carteB[0], &datainB[0], &dataoutB[0]);
+			SetWindowText(hStatic, "");
+			nume3 = false;
+			prenume3 = false;
+			carte3 = false;
+			datain3 = false;
+			dataout3 = false;
+			if (del == true)
+			{
+				MessageBox(hwnd, "Clientul nu a fost gasit!", "Eroare!", MB_OK | MB_ICONWARNING);
+				del = false;
+			}
+		}
 		
 			break;
 		}
@@ -1117,7 +1166,8 @@ LRESULT CALLBACK windowprocessforwindow3(HWND hwnd, UINT message, WPARAM wParam,
 	return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-LRESULT CALLBACK windowprocessforwindow4(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK windowprocessforwindow4(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
+{
 	if (GetFocus() == hDelN && nume4 == false)
 	{
 		SendMessage(hDelN,
@@ -1229,6 +1279,11 @@ LRESULT CALLBACK windowprocessforwindow4(HWND hwnd, UINT message, WPARAM wParam,
 		{
 		case DEL_BUTTON2:
 		{
+			if (prim == NULL)
+			{
+				MessageBox(hwnd, "Nu exista clienti in baza de date", "Eroare!", MB_OK | MB_ICONWARNING);
+				break;
+			}
 			int gwstat = 0;
 			gwstat = GetWindowText(hDelN, &numeB[0], 50);
 			gwstat = GetWindowText(hDelP, &prenumeB[0], 50);
@@ -1240,11 +1295,13 @@ LRESULT CALLBACK windowprocessforwindow4(HWND hwnd, UINT message, WPARAM wParam,
 				SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)n->nume);
 				n = n->next;
 			}
+			SetWindowText(hStatic, "");
 			nume4 = false;
 			prenume4 = false;
 			if (del == true)
 			{
 				MessageBox(hwnd, "Clientul nu a fost gasit!", "Eroare!", MB_OK | MB_ICONWARNING);
+				del = false;
 			}
 		}
 		break;
@@ -1286,29 +1343,13 @@ LRESULT CALLBACK windowprocessforwindow5(HWND hwnd, UINT message, WPARAM wParam,
 			(LPARAM)"Prenume");
 		prenume5 = false;
 	}
-	if (GetFocus() == hSrcC && carte5 == false)
+	switch (message) 
 	{
-		SendMessage(hSrcC,
-			WM_SETTEXT,
-			NULL,
-			(LPARAM)"");
-		carte5 = true;
-	}
-	if (GetFocus() != hSrcC && GetWindowTextLength(GetDlgItem(hwnd, ADD_EDITC5)) == NULL)
-	{
-		SendMessage(hSrcC,
-			WM_SETTEXT,
-			NULL,
-			(LPARAM)"Carte");
-		carte5 = false;
-	}
-	switch (message) {
 	case WM_DESTROY:
 	{
 		window5open = false;
 		nume5 = false;
 		prenume5 = false;
-		carte5 = false;
 	}
 		break;
 	case WM_CREATE:
@@ -1398,24 +1439,45 @@ LRESULT CALLBACK windowprocessforwindow5(HWND hwnd, UINT message, WPARAM wParam,
 			WM_SETFONT,
 			(WPARAM)hfDefault,
 			MAKELPARAM(FALSE, 0));
-		HWND hWndButton2 = CreateWindowEx(NULL,
-			"BUTTON",
-			"Cautare Carte",
-			WS_TABSTOP | WS_VISIBLE |
-			WS_CHILD | BS_DEFPUSHBUTTON,
-			300,
-			65,
-			100,
-			24,
-			hwnd,
-			(HMENU)ADD_BUTTON2,
-			GetModuleHandle(NULL),
-			NULL);
-		SendMessage(hWndButton2,
-			WM_SETFONT,
-			(WPARAM)hfDefault,
-			MAKELPARAM(FALSE, 0));
 	}
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case ADD_BUTTON2:
+		{
+			char buf[1024];
+			int gwstat = 0;
+			gwstat = GetWindowText(hSrcN, &numeB[0], 50);
+			gwstat = GetWindowText(hSrcP, &prenumeB[0], 50);
+			src_pers(&numeB[0], &prenumeB[0]);
+			if (del == true)
+			{
+				MessageBox(hwnd, "Clientul nu a fost gasit!", "Eroare!", MB_OK | MB_ICONWARNING);
+				del = false;
+				break;
+			}
+			SendMessage(hList, LB_RESETCONTENT, 0, 0);
+			Client *n = prim;
+			while (n != NULL)
+			{
+				SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)n->nume);
+				n = n->next;
+			}
+			SetWindowText(hStatic, "");
+			clienti = prim;
+			for (int i = 0; i < count; i++)
+			{
+				clienti = clienti->next;
+			}
+			StringCbPrintf(buf, 1024, "Cautare:\n Nume: %s\n Carte: %s\n Data Imprumut: %s\n Data Aducere: %s",
+				clienti->nume, clienti->book, clienti->datain, clienti->dataout);
+			SetWindowText(hStatic, buf);
+			nume5 = false;
+			prenume5 = false;
+		}
+		break;
+		}
+
 	}
 	return DefWindowProc(hwnd, message, wParam, lParam);
 }
